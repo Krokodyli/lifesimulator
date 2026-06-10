@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dzień Bez Wdrożenia</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #17191d;
+      --panel: #24272d;
+      --panel-2: #2f333b;
+      --text: #f3efe5;
+      --muted: #b8b0a2;
+      --line: #4d4f56;
+      --red: #f05d5e;
+      --amber: #f0b75d;
+      --green: #76c779;
+      --blue: #70a5e8;
+      --shadow: rgba(0, 0, 0, .34);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 18% 14%, rgba(240, 183, 93, .12), transparent 28rem),
+        radial-gradient(circle at 82% 5%, rgba(112, 165, 232, .10), transparent 24rem),
+        linear-gradient(135deg, #17191d 0%, #20242a 48%, #17191d 100%);
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .app {
+      width: min(1120px, calc(100% - 28px));
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 28px 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 330px;
+      gap: 22px;
+      align-items: center;
+    }
+
+    .game {
+      background: rgba(36, 39, 45, .92);
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 8px;
+      box-shadow: 0 24px 70px var(--shadow);
+      overflow: hidden;
+    }
+
+    .topbar {
+      min-height: 66px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, .08);
+      background: rgba(23, 25, 29, .58);
+    }
+
+    .title {
+      min-width: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.45rem, 3.2vw, 2.45rem);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: .94rem;
+      line-height: 1.4;
+    }
+
+    .badge {
+      flex: 0 0 auto;
+      padding: 8px 11px;
+      border: 1px solid rgba(240, 183, 93, .44);
+      border-radius: 999px;
+      color: #ffe1a9;
+      background: rgba(240, 183, 93, .12);
+      font-size: .88rem;
+      white-space: nowrap;
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 220px;
+      gap: 18px;
+      padding: 20px;
+    }
+
+    .story {
+      min-height: 390px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .chapter {
+      margin: 0;
+      color: var(--amber);
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      font-size: .82rem;
+    }
+
+    .narrative {
+      margin: 0;
+      font-size: clamp(1.12rem, 2vw, 1.45rem);
+      line-height: 1.48;
+    }
+
+    .problem {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.55;
+    }
+
+    .choices {
+      margin-top: auto;
+      display: grid;
+      gap: 10px;
+    }
+
+    .choice {
+      width: 100%;
+      min-height: 58px;
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      color: var(--text);
+      text-align: left;
+      background: var(--panel-2);
+      border: 1px solid rgba(255, 255, 255, .10);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform .14s ease, border-color .14s ease, background .14s ease;
+    }
+
+    .choice:hover,
+    .choice:focus-visible {
+      transform: translateY(-1px);
+      border-color: rgba(240, 183, 93, .58);
+      background: #363a43;
+      outline: none;
+    }
+
+    .choice:active {
+      transform: translateY(0);
+    }
+
+    .choice-number {
+      width: 34px;
+      height: 34px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 50%;
+      color: #17191d;
+      background: var(--amber);
+      font-weight: 800;
+    }
+
+    .choice.surrender .choice-number {
+      color: #fff;
+      background: var(--red);
+    }
+
+    .choice-label {
+      display: block;
+      min-width: 0;
+      font-weight: 700;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .meter {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .problem-tower {
+      position: relative;
+      min-height: 300px;
+      padding: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 8px;
+      background:
+        linear-gradient(rgba(255, 255, 255, .04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .04) 1px, transparent 1px),
+        rgba(23, 25, 29, .62);
+      background-size: 26px 26px;
+    }
+
+    .tower-title {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .boxes {
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 7px;
+      min-height: 224px;
+      justify-content: flex-start;
+    }
+
+    .box {
+      min-height: 22px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, .12);
+      background: linear-gradient(135deg, rgba(240, 93, 94, .96), rgba(240, 183, 93, .82));
+      box-shadow: 0 8px 18px rgba(0, 0, 0, .2);
+      transform: rotate(var(--tilt));
+      animation: wobble .8s ease both;
+    }
+
+    @keyframes wobble {
+      0% { transform: translateY(-10px) rotate(0deg); opacity: 0; }
+      70% { transform: translateY(2px) rotate(calc(var(--tilt) * 1.2)); opacity: 1; }
+      100% { transform: translateY(0) rotate(var(--tilt)); opacity: 1; }
+    }
+
+    .stats {
+      display: grid;
+      gap: 9px;
+      padding: 14px;
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 8px;
+      background: rgba(23, 25, 29, .42);
+    }
+
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: .93rem;
+    }
+
+    .stat strong {
+      color: var(--text);
+    }
+
+    .log {
+      max-height: 142px;
+      padding: 13px;
+      overflow: auto;
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 8px;
+      background: rgba(23, 25, 29, .42);
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.45;
+    }
+
+    .log p {
+      margin: 0 0 8px;
+    }
+
+    .log p:last-child {
+      margin-bottom: 0;
+    }
+
+    .ending {
+      display: none;
+      min-height: 100vh;
+      width: min(860px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 34px 0;
+      place-items: center;
+    }
+
+    .ending.active {
+      display: grid;
+    }
+
+    .ending-panel {
+      width: 100%;
+      padding: clamp(22px, 5vw, 44px);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, .10);
+      background: rgba(36, 39, 45, .95);
+      box-shadow: 0 24px 70px var(--shadow);
+      text-align: center;
+    }
+
+    .ending h2 {
+      margin: 0 0 12px;
+      font-size: clamp(2.1rem, 8vw, 5rem);
+      line-height: 1;
+      letter-spacing: 0;
+      color: var(--red);
+    }
+
+    .ending p {
+      margin: 0 auto 22px;
+      max-width: 620px;
+      color: var(--muted);
+      font-size: 1.08rem;
+      line-height: 1.55;
+    }
+
+    .restart {
+      min-height: 46px;
+      padding: 10px 16px;
+      color: #17191d;
+      border: 0;
+      border-radius: 8px;
+      background: var(--amber);
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .restart:hover,
+    .restart:focus-visible {
+      outline: 2px solid rgba(255, 255, 255, .44);
+      outline-offset: 2px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 840px) {
+      .app {
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+
+      .stage {
+        grid-template-columns: 1fr;
+      }
+
+      .story {
+        min-height: 430px;
+      }
+
+      .meter {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .problem-tower {
+        min-height: 250px;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .app {
+        width: min(100% - 18px, 1120px);
+        padding: 9px 0;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .badge {
+        white-space: normal;
+      }
+
+      .stage {
+        padding: 14px;
+      }
+
+      .meter {
+        grid-template-columns: 1fr;
+      }
+
+      .choice {
+        grid-template-columns: 30px 1fr;
+        min-height: 62px;
+      }
+
+      .choice-number {
+        width: 30px;
+        height: 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" id="app">
+    <section class="game" aria-live="polite">
+      <header class="topbar">
+        <div class="title">
+          <h1>Dzień Bez Wdrożenia</h1>
+          <p class="subtitle">Cel młodego programisty: naprawić drobny błąd przed końcem zwykłego dnia pracy.</p>
+        </div>
+        <div class="badge" id="badge">Status: dzień dopiero się zaczyna</div>
+      </header>
+
+      <div class="stage">
+        <section class="story">
+          <p class="chapter" id="chapter">Problem początkowy</p>
+          <p class="narrative" id="narrative"></p>
+          <p class="problem" id="problem"></p>
+
+          <div class="choices" aria-label="Decyzje">
+            <button class="choice" type="button" data-choice="solve">
+              <span class="choice-number">1</span>
+              <span class="choice-label" id="solveLabel"></span>
+            </button>
+            <button class="choice" type="button" data-choice="alternate">
+              <span class="choice-number">2</span>
+              <span class="choice-label" id="alternateLabel"></span>
+            </button>
+            <button class="choice surrender" type="button" data-choice="surrender">
+              <span class="choice-number">3</span>
+              <span class="choice-label">Poddaj się</span>
+            </button>
+          </div>
+        </section>
+
+        <aside class="meter" aria-label="Skala problemów">
+          <div class="problem-tower">
+            <p class="tower-title">Wieża spraw pilnych</p>
+            <div class="boxes" id="boxes"></div>
+          </div>
+
+          <div class="stats">
+            <div class="stat"><span>Nieudane próby</span><strong id="fails">0</strong></div>
+            <div class="stat"><span>Warstwy problemu</span><strong id="distance">1</strong></div>
+            <div class="stat"><span>Skupienie</span><strong id="dignity">82%</strong></div>
+          </div>
+
+          <div class="log" id="log" aria-label="Dziennik niepowodzeń"></div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <section class="ending" id="ending" aria-live="polite">
+    <div class="ending-panel">
+      <h2>Poddałeś się!</h2>
+      <p id="endingText"></p>
+      <button class="restart" type="button" id="restart">Zacznij dzień od nowa</button>
+    </div>
+  </section>
+
+  <script>
+    const scenes = [
+      {
+        title: "07:12, mieszkanie",
+        text: "Jesteś młodym programistą i zaczynasz zwykły dzień pracy. W kanale zespołu czeka jedno zadanie: poprawić naliczanie rabatu w koszyku i wypchnąć zmianę przed końcem dnia.",
+        problem: "Laptop uruchamia się tylko do ekranu odzyskiwania, a komunikat błędu pokazuje numer zgłoszenia, którego nikt w firmie nie zna.",
+        solve: "Spróbuj naprawić start systemu",
+        alternate: "Uruchom komputer w trybie awaryjnym",
+        solveFail: "System wstaje, ale resetuje wszystkie zapisane sieci i usuwa profil służbowego VPN.",
+        alternateFail: "Tryb awaryjny uruchamia pulpit, ale blokuje sterownik sieciowy i usuwa profil służbowego VPN."
+      },
+      {
+        title: "08:03, pierwsze połączenie",
+        text: "Masz działający pulpit, ale nie masz dostępu do żadnych firmowych usług. Telefon pokazuje już kilka wiadomości z pytaniem, czy poprawka ruszyła.",
+        problem: "Domowy router widzi sieć, lecz każda próba połączenia przekierowuje na panel konfiguracyjny zatytułowany \"pierwsze uruchomienie\".",
+        solve: "Skonfiguruj router od nowa",
+        alternate: "Udostępnij internet z telefonu",
+        solveFail: "Router odzyskuje internet, ale zmienia czas systemowy laptopa na datę sprzed dwóch lat, więc certyfikaty przestają działać.",
+        alternateFail: "Hotspot działa przez chwilę, po czym telefon synchronizuje laptop z błędną strefą czasu, więc certyfikaty przestają działać."
+      },
+      {
+        title: "08:41, VPN",
+        text: "Zegar jest poprawiony ręcznie, jednak klient VPN odrzuca połączenie. Portal pomocy wymaga zalogowania przez ten sam VPN.",
+        problem: "Certyfikat urządzenia wygasł o 00:00, a jego odnowienie wymaga kodu z aplikacji 2FA, która sama wymaga odnowienia certyfikatu urządzenia.",
+        solve: "Odnów certyfikat przez procedurę awaryjną",
+        alternate: "Poproś zespół o tymczasowy dostęp",
+        solveFail: "Procedura awaryjna generuje nowy certyfikat, ale przypisuje go do nieistniejącego profilu o twoim imieniu bez polskich znaków.",
+        alternateFail: "Tymczasowy dostęp zostaje przyznany, ale do nieistniejącego profilu o twoim imieniu bez polskich znaków."
+      },
+      {
+        title: "09:26, konto użytkownika",
+        text: "Support widzi dwa konta: właściwe i to świeżo utworzone bez polskich znaków. Oba są częściowo aktywne, żadne nie ma pełnych uprawnień.",
+        problem: "Repozytorium z kodem koszyka jest widoczne tylko z konta bez dostępu do poczty, a link aktywacyjny przychodzi tylko na konto bez dostępu do repozytorium.",
+        solve: "Scal konta w panelu administracyjnym",
+        alternate: "Wejdź do repozytorium przez link od kolegi",
+        solveFail: "Scalenie kont zostaje zapisane jako migracja tożsamości i odbiera ci rolę w projekcie na czas zatwierdzenia.",
+        alternateFail: "Link otwiera repozytorium w trybie tylko do odczytu i odbiera ci rolę w projekcie na czas zatwierdzenia."
+      },
+      {
+        title: "10:14, repozytorium",
+        text: "Po krótkiej zgodzie lidera odzyskujesz rolę. Klonujesz projekt i otwierasz zgłoszenie z błędem rabatu. Opis ma dwa zdania i jeden zrzut ekranu.",
+        problem: "Instalacja zależności kończy się konfliktem lockfile'a: projekt wymaga jednocześnie wersji biblioteki sprzed i po zmianie nazwy pakietu.",
+        solve: "Zaktualizuj lockfile lokalnie",
+        alternate: "Użyj starszego obrazu deweloperskiego",
+        solveFail: "Nowy lockfile przechodzi instalację, ale uruchamia generator typów, który usuwa definicję koszyka.",
+        alternateFail: "Starszy obraz uruchamia aplikację, ale zawiera generator typów, który usuwa definicję koszyka."
+      },
+      {
+        title: "11:02, definicja koszyka",
+        text: "Bez typu koszyka edytor podkreśla prawie każdy plik. Zgłoszenie nadal wygląda na drobne, ale nie ma już jednego miejsca, od którego można zacząć.",
+        problem: "Generator typów twierdzi, że model koszyka istnieje, ale tylko w schemacie utworzonym dla przyszłej wersji systemu.",
+        solve: "Wygeneruj typy z aktualnego schematu",
+        alternate: "Odtwórz brakujący typ ręcznie",
+        solveFail: "Aktualny schemat pobiera się z bazy testowej, w której koszyk ma pole rabatu jako tekst, liczbę i listę jednocześnie.",
+        alternateFail: "Ręcznie odtworzony typ kompiluje się, ale testy łączą go z bazą testową, w której rabat jest tekstem, liczbą i listą jednocześnie."
+      },
+      {
+        title: "12:18, baza testowa",
+        text: "Przerwa obiadowa mija przy terminalu. Widzisz już, że błąd rabatu nie jest błędem rabatu, tylko objawem danych, których nikt nie potrafi opisać.",
+        problem: "Migracja naprawiająca pole rabatu wymaga usunięcia trzech rekordów testowych, ale każdy z nich jest oznaczony jako dane krytyczne do demonstracji.",
+        solve: "Napisz migrację zachowującą wszystkie rekordy",
+        alternate: "Postaw lokalną bazę od zera",
+        solveFail: "Migracja zachowuje rekordy, ale tworzy dla każdego z nich osobną walutę o tym samym kodzie.",
+        alternateFail: "Lokalna baza startuje pusta, po czym seed tworzy dla każdego rekordu osobną walutę o tym samym kodzie."
+      },
+      {
+        title: "13:37, waluty",
+        text: "Aplikacja uruchamia ekran koszyka. Cena produktu jest stabilna, dopóki nie otworzysz podsumowania. Wtedy trzy waluty o tym samym kodzie zaczynają konkurować o wynik.",
+        problem: "Moduł rabatu wybiera walutę według najkrótszej nazwy środowiska, więc lokalnie działa inaczej niż w testach i inaczej niż w CI.",
+        solve: "Popraw wybór waluty w module rabatu",
+        alternate: "Dodaj obejście tylko dla środowiska CI",
+        solveFail: "Poprawka usuwa losowość, ale ujawnia, że testy akceptują tylko wynik obliczony w nieistniejącej strefie czasowej.",
+        alternateFail: "Obejście przechodzi lokalnie, ale CI nadal akceptuje tylko wynik obliczony w nieistniejącej strefie czasowej."
+      },
+      {
+        title: "14:46, strefa czasu",
+        text: "W repozytorium znajdujesz komentarz sprzed roku: testy koszyka zależą od tymczasowej strefy czasu użytej podczas prezentacji sprzedażowej.",
+        problem: "Strefa nazywa się Europe/Warsaw-Demo i istnieje tylko w obrazie CI, którego nie da się pobrać, bo został oznaczony jako poufny.",
+        solve: "Usuń zależność od strefy demo",
+        alternate: "Odtwórz strefę lokalnie",
+        solveFail: "Usunięcie zależności naprawia testy rabatu, ale psuje testy faktur generowanych z tego samego koszyka.",
+        alternateFail: "Lokalna strefa odtwarza wynik koszyka, ale psuje testy faktur generowanych z tego samego koszyka."
+      },
+      {
+        title: "16:05, faktury",
+        text: "Zgłoszenie o rabacie dotknęło faktur. Lider prosi, żebyś zrobił minimalną zmianę i nie ruszał niczego więcej.",
+        problem: "Minimalna zmiana wymaga dodania jednego warunku, ale plik z warunkami jest generowany podczas buildu i nadpisuje każdą ręczną poprawkę.",
+        solve: "Zmień źródło generatora",
+        alternate: "Dodaj poprawkę po wygenerowaniu pliku",
+        solveFail: "Generator przyjmuje zmianę, ale wymaga podpisania commita kluczem, który wygasł rano razem z certyfikatem urządzenia.",
+        alternateFail: "Poprawka po generowaniu działa lokalnie, ale hook przed commitem wymaga podpisu kluczem, który wygasł rano razem z certyfikatem urządzenia."
+      },
+      {
+        title: "17:12, podpis commita",
+        text: "Odnowienie klucza wygląda prosto. W panelu bezpieczeństwa widzisz formularz z jednym przyciskiem i statusem \"oczekuje na synchronizację\".",
+        problem: "Synchronizacja klucza wymaga potwierdzenia w aplikacji 2FA, która nadal przypisana jest do profilu bez polskich znaków.",
+        solve: "Przenieś aplikację 2FA na właściwe konto",
+        alternate: "Poproś lidera o zatwierdzenie commita",
+        solveFail: "Przeniesienie 2FA działa, ale system traktuje je jako zmianę tożsamości i blokuje wdrożenia na 24 godziny.",
+        alternateFail: "Lider zatwierdza commit, ale system traktuje obcy podpis jako zmianę tożsamości i blokuje wdrożenia na 24 godziny."
+      },
+      {
+        title: "18:03, wdrożenie",
+        text: "Poprawka istnieje, testy lokalnie są zielone, a dzień pracy formalnie się kończy. Wdrożenie jest zablokowane do jutra, ale błąd nadal widnieje jako pilny.",
+        problem: "Jedyna dostępna ścieżka to przełączyć flagę funkcji, lecz panel flag pobiera listę środowisk z repozytorium, do którego straciłeś dostęp po blokadzie wdrożeń.",
+        solve: "Odblokuj dostęp do panelu flag",
+        alternate: "Wyłącz rabat ręcznie w konfiguracji",
+        solveFail: "Panel flag otwiera się, ale pokazuje dwa środowiska produkcyjne o tej samej nazwie i żadne nie przyjmuje zmiany.",
+        alternateFail: "Ręczna konfiguracja zapisuje się, ale tworzy dwa środowiska produkcyjne o tej samej nazwie i żadne nie przyjmuje zmiany."
+      }
+    ];
+
+    const loopingProblems = [
+      "System zgłoszeń tworzy duplikat zadania i uznaje go za nadrzędny wobec oryginału.",
+      "Monitoring zgłasza, że poprawka nie została wdrożona do środowiska, które nie istnieje w panelu.",
+      "Kalendarz zespołu przesuwa spotkanie podsumowujące na godzinę, która już minęła.",
+      "Dokumentacja wymaga aktualizacji przed wdrożeniem, ale znajduje się w repozytorium objętym blokadą.",
+      "Pipeline rusza samoczynnie i zatrzymuje się na kroku wymagającym ręcznego uruchomienia.",
+      "Slack wysyła automatyczne przypomnienie do profilu bez polskich znaków, który nie odbiera wiadomości.",
+      "Test regresji przechodzi tylko wtedy, gdy błąd nadal występuje w danych demonstracyjnych.",
+      "Panel incydentów prosi o wskazanie właściciela problemu i pokazuje wyłącznie twoje dwa niepełne konta.",
+      "Wersja poprawki zostaje oznaczona jako przyszła, więc nie może rozwiązać problemu z dzisiaj.",
+      "System urlopowy rejestruje twoje nadgodziny jako nieobecność przy własnym wdrożeniu."
+    ];
+
+    const state = {
+      index: 0,
+      failures: 0,
+      distance: 1,
+      dignity: 82,
+      log: []
+    };
+
+    const elements = {
+      app: document.querySelector("#app"),
+      ending: document.querySelector("#ending"),
+      chapter: document.querySelector("#chapter"),
+      narrative: document.querySelector("#narrative"),
+      problem: document.querySelector("#problem"),
+      solveLabel: document.querySelector("#solveLabel"),
+      alternateLabel: document.querySelector("#alternateLabel"),
+      badge: document.querySelector("#badge"),
+      fails: document.querySelector("#fails"),
+      distance: document.querySelector("#distance"),
+      dignity: document.querySelector("#dignity"),
+      boxes: document.querySelector("#boxes"),
+      log: document.querySelector("#log"),
+      endingText: document.querySelector("#endingText")
+    };
+
+    function currentScene() {
+      if (state.index < scenes.length) {
+        return scenes[state.index];
+      }
+
+      const loopIndex = (state.index - scenes.length) % loopingProblems.length;
+      return {
+        title: "Po godzinach",
+        text: "Poprawka nadal istnieje tylko lokalnie, a każdy system, który miał pomóc ją dostarczyć, stał się osobnym źródłem blokady.",
+        problem: loopingProblems[loopIndex],
+        solve: "Spróbuj zamknąć najnowszą blokadę",
+        alternate: "Cofnij się i wybierz inną ścieżkę",
+        solveFail: "Blokada zostaje oznaczona jako rozwiązana, ale automatycznie tworzy zależne zadanie bez właściciela.",
+        alternateFail: "Inna ścieżka prowadzi do tej samej blokady, tylko z nowym identyfikatorem i pilniejszym priorytetem."
+      };
+    }
+
+    function render() {
+      const scene = currentScene();
+
+      elements.chapter.textContent = scene.title;
+      elements.narrative.textContent = scene.text;
+      elements.problem.textContent = scene.problem;
+      elements.solveLabel.textContent = scene.solve;
+      elements.alternateLabel.textContent = scene.alternate;
+      elements.badge.textContent = statusText();
+      elements.fails.textContent = state.failures;
+      elements.distance.textContent = state.distance;
+      elements.dignity.textContent = `${Math.max(0, state.dignity)}%`;
+
+      elements.boxes.innerHTML = "";
+      const visibleBoxes = Math.min(12, state.failures + 1);
+      for (let i = 0; i < visibleBoxes; i += 1) {
+        const box = document.createElement("div");
+        const width = 58 + ((i * 17 + state.failures * 9) % 40);
+        const tilt = ((i % 2 === 0 ? -1 : 1) * (2 + (i % 4))) / 2;
+        box.className = "box";
+        box.style.width = `${width}%`;
+        box.style.marginLeft = `${(i * 11) % 22}px`;
+        box.style.setProperty("--tilt", `${tilt}deg`);
+        elements.boxes.appendChild(box);
+      }
+
+      elements.log.innerHTML = state.log
+        .slice(-5)
+        .map(entry => `<p>${entry}</p>`)
+        .join("");
+    }
+
+    function statusText() {
+      if (state.failures < 3) return "Status: próba rozpoczęcia pracy";
+      if (state.failures < 7) return "Status: dostęp częściowy";
+      if (state.failures < 12) return "Status: zmiana bez drogi wdrożenia";
+      return "Status: problem rozszerza się sam";
+    }
+
+    function fail(kind) {
+      const scene = currentScene();
+      const message = kind === "solve" ? scene.solveFail : scene.alternateFail;
+      state.failures += 1;
+      state.index += 1;
+      state.distance += kind === "solve" ? 1 : 2;
+      state.dignity -= kind === "solve" ? 4 : 6;
+      state.log.push(message);
+      render();
+    }
+
+    function surrender() {
+      elements.app.classList.add("hidden");
+      elements.ending.classList.add("active");
+      elements.endingText.textContent =
+        `Po ${state.failures} nieudanych próbach, ${state.distance} warstwach problemu i skupieniu na poziomie ${Math.max(0, state.dignity)}% jedyną decyzją, która nie tworzy kolejnej blokady, jest przerwanie dnia.`;
+    }
+
+    function restart() {
+      state.index = 0;
+      state.failures = 0;
+      state.distance = 1;
+      state.dignity = 82;
+      state.log = [];
+      elements.ending.classList.remove("active");
+      elements.app.classList.remove("hidden");
+      render();
+    }
+
+    document.querySelectorAll("[data-choice]").forEach(button => {
+      button.addEventListener("click", () => {
+        const choice = button.dataset.choice;
+        if (choice === "surrender") {
+          surrender();
+          return;
+        }
+        fail(choice);
+      });
+    });
+
+    document.querySelector("#restart").addEventListener("click", restart);
+
+    render();
+  </script>
+</body>
+</html>
